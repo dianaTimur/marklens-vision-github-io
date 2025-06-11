@@ -29,36 +29,11 @@
             overflow-x: hidden;
             scroll-behavior: smooth;
             perspective: 1000px; /* For 3D transformations */
-            /* User selection prevention */
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
-            -webkit-touch-callout: none;
-            -webkit-tap-highlight-color: transparent;
         }
 
         /* Prevent right-click and drag */
         * {
-            -webkit-user-drag: none;
-            -khtml-user-drag: none;
-            -moz-user-drag: none;
-            -o-user-drag: none;
-            user-drag: none;
             pointer-events: auto; /* Ensure elements are still clickable */
-        }
-
-        img {
-            /* Redundant, already covered by * selector, but good for explicit clarity */
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
-            -webkit-user-drag: none;
-            -khtml-user-drag: none;
-            -moz-user-drag: none;
-            -o-user-drag: none;
-            user-drag: none;
         }
 
         .container {
@@ -395,18 +370,6 @@
             100% { transform: scale(0.01) rotateY(180deg); opacity: 0; }
         }
 
-        /* Protection Overlay */
-        .protection-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255, 0, 0, 0.1);
-            z-index: 10000;
-            display: none; /* Hidden by default */
-            pointer-events: none; /* Allows clicks to pass through when hidden */
-        }
 
         /* Media Queries for Responsiveness */
         @media (max-width: 1200px) {
@@ -469,7 +432,6 @@
     </style>
 </head>
 <body>
-    <div class="protection-overlay" id="protectionOverlay"></div>
 
     <div class="container">
         <h1>معرض أعمال Marklens Vision</h1>
@@ -546,6 +508,9 @@
             <img id="lightbox-img" src="" alt="صورة مكبرة">
         </div>
     </div>
+    <footer style="text-align: center; padding: 30px 0; color: #888; font-size: 0.9em;">
+    © جميع الحقوق محفوظة Marklens Vision - 2025
+</footer>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -562,71 +527,7 @@
             let currentImages = []; // Stores the gallery items of the currently active tab
             let devToolsOpen = false; // Flag to prevent multiple alerts
 
-            // --- Screenshot Protection & Security Enhancements ---
-            function showProtectionWarning() {
-                if (!devToolsOpen) { // Only show warning once per detection
-                    alert('⚠️ تنبيه: لقطات الشاشة والتصوير غير مسموح!\nScreenshot and photography are not allowed!');
-                    protectionOverlay.style.display = 'block';
-                    setTimeout(() => {
-                        protectionOverlay.style.display = 'none';
-                    }, 2000);
-                    devToolsOpen = true; // Set flag to true
-                }
-            }
-
-            // Disable right-click context menu
-            document.addEventListener('contextmenu', e => e.preventDefault());
-            
-            // Disable common developer tools shortcuts and screenshot keys
-            document.addEventListener('keydown', function(e) {
-                // F12, Ctrl+Shift+I, Ctrl+U, Ctrl+S, Print Screen
-                if (e.key === 'F12' ||
-                    (e.ctrlKey && e.shiftKey && e.key === 'I') ||
-                    (e.ctrlKey && e.key === 'U') ||
-                    (e.ctrlKey && e.key === 'S') ||
-                    e.key === 'PrintScreen' || e.code === 'PrintScreen') { // Add e.code for better compatibility
-                    e.preventDefault();
-                    showProtectionWarning();
-                }
-            });
-
-            // Basic DevTools detection for continuous monitoring
-            // Note: This is not foolproof and can be inconsistent across browsers.
-            setInterval(() => {
-                const threshold = 160; // Increased threshold for more robust detection
-                if (window.outerWidth - window.innerWidth > threshold || window.outerHeight - window.innerHeight > threshold) {
-                    if (!devToolsOpen) {
-                        showProtectionWarning();
-                    }
-                } else {
-                    devToolsOpen = false; // Reset flag if DevTools is closed
-                }
-            }, 1000); // Check every second
-
-            // Blur page when window loses focus (potential screenshot)
-            window.addEventListener('blur', function() {
-                document.body.style.filter = 'blur(10px)';
-                protectionOverlay.style.display = 'block';
-                devToolsOpen = true; // Assume potential compromise
-            });
-
-            window.addEventListener('focus', function() {
-                document.body.style.filter = 'none';
-                protectionOverlay.style.display = 'none';
-                devToolsOpen = false; // Reset if focus returns
-            });
-
-            // Prevent image saving via drag
-            document.addEventListener('dragstart', function(e) {
-                if (e.target.tagName === 'IMG') {
-                    e.preventDefault();
-                }
-            });
-
-            // Console warning
-            console.log('%c⚠️ تحذير: هذا الموقع محمي من النسخ والتصوير!', 'color: red; font-size: 20px; font-weight: bold;');
-            console.log('%c⚠️ WARNING: This site is protected from copying and photography!', 'color: red; font-size: 20px; font-weight: bold;');
-
+           
             // --- Tabs functionality ---
             tabButtons.forEach(button => {
                 button.addEventListener('click', function() {
