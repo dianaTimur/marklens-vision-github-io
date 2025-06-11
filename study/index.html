@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marklens Vision - معرض أعمال جبار!</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Global Variables & Base Styles */
+        :root {
+            --primary-color: #ffde6b; /* Aqua Neon */
+            --secondary-color: #ffd641; /* Pink Neon */
+            --dark-bg: #0d0d0d; /* Ultra Dark Background */
+            --card-bg: #1a1a1a; /* Dark Card Background */
+            --text-color: #f0f0f0; /* Light Gray Text */
+            --accent-glow: 0 0 15px var(--primary-color), 0 0 30px var(--secondary-color);
+            --border-glow: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Screenshot Prevention */
+        body {
+            font-family: 'Cairo', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, var(--dark-bg) 0%, #050505 100%);
+            color: var(--text-color);
+            direction: rtl; /* Right-to-Left for Arabic */
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+            perspective: 1000px; /* For 3D transformations */
+            /* User selection prevention */
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Prevent right-click and drag */
+        * {
+            -webkit-user-drag: none;
+            -khtml-user-drag: none;
+            -moz-user-drag: none;
+            -o-user-drag: none;
+            user-drag: none;
+            pointer-events: auto; /* Ensure elements are still clickable */
+        }
+
+        img {
+            /* Redundant, already covered by * selector, but good for explicit clarity */
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            -webkit-user-drag: none;
+            -khtml-user-drag: none;
+            -moz-user-drag: none;
+            -o-user-drag: none;
+            user-drag: none;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1400px;
+            margin: 50px auto;
+            padding: 40px;
+            background: var(--card-bg);
+            border-radius: 25px;
+            box-shadow: 0 15px 60px rgba(0, 0, 0, 0.8), var(--accent-glow);
+            border: var(--border-glow);
+            position: relative;
+            transform-style: preserve-3d;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 70px;
+            font-size: 4.5em;
+            letter-spacing: 3px;
+            text-shadow: var(--accent-glow);
+            position: relative;
+            padding-bottom: 20px;
+            font-weight: 900;
+            animation: textGlow 2s infinite alternate;
+        }
+
+        @keyframes textGlow {
+            from { text-shadow: 0 0 5px var(--primary-color), 0 0 10px var(--secondary-color); }
+            to { text-shadow: 0 0 10px var(--primary-color), 0 0 20px var(--secondary-color); }
+        }
+
+        h1::after {
+            content: '';
+            display: block;
+            width: 150px;
+            height: 6px;
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            margin: 20px auto 0;
+            border-radius: 4px;
+            box-shadow: var(--accent-glow);
+        }
+
+        /* Tabs Navigation */
+        .tabs-nav {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 50px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 15px;
+            transform-style: preserve-3d;
+        }
+
+        .tab-button {
+            background: #2b2b2b;
+            color: var(--text-color);
+            padding: 18px 35px;
+            margin: 0 12px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1.3em;
+            font-weight: 800;
+            transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+            transform: translateZ(0); /* Promotes element to its own layer for smooth animation */
+        }
+
+        .tab-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: 0.7s;
+            z-index: -1;
+        }
+
+        .tab-button:hover::before {
+            left: 100%;
+        }
+
+        .tab-button:hover {
+            background: #3a3a3a;
+            color: var(--primary-color);
+            transform: translateY(-5px) scale(1.02) translateZ(10px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), var(--accent-glow);
+            border: 1px solid var(--primary-color);
+        }
+
+        .tab-button.active {
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            color: #fff;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6), var(--accent-glow);
+            transform: scale(1.08) translateZ(20px);
+            border: 2px solid #fff;
+        }
+
+        /* Gallery Grid */
+        .gallery-content {
+            display: none; /* Default state */
+            opacity: 0;
+            transition: opacity 0.8s ease-in-out;
+            transform-style: preserve-3d;
+        }
+
+        .gallery-content.active {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 40px;
+            justify-content: center;
+            animation: fadeInGrid 1s cubic-bezier(0.215, 0.61, 0.355, 1) forwards;
+        }
+
+        @keyframes fadeInGrid {
+            from { opacity: 0; transform: translateY(50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .gallery-item {
+            position: relative;
+            overflow: hidden;
+            border-radius: 20px;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            border: var(--border-glow);
+            transform-style: preserve-3d;
+            transform: translateZ(0); /* For initial layering */
+        }
+
+        .gallery-item:hover {
+            transform: translateY(-15px) rotateX(5deg) scale(1.05) translateZ(30px);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9), var(--accent-glow);
+            border-color: var(--primary-color);
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            display: block;
+            transition: transform 1s cubic-bezier(0.23, 1, 0.32, 1), filter 0.8s ease-in-out;
+            filter: grayscale(80%) brightness(0.7);
+        }
+
+        .gallery-item:hover img {
+            transform: scale(1.2) rotateZ(3deg);
+            filter: grayscale(0%) brightness(1);
+        }
+
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, transparent 50%, rgba(0, 0, 0, 0.9) 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.7s ease-in-out;
+            border-radius: 20px;
+        }
+
+        .gallery-item:hover .overlay {
+            opacity: 1;
+        }
+
+        .overlay i {
+            color: var(--primary-color);
+            font-size: 4em;
+            text-shadow: var(--accent-glow);
+            transform: scale(0.7) translateY(20px);
+            opacity: 0;
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) 0.1s;
+        }
+
+        .gallery-item:hover .overlay i {
+            transform: scale(1) translateY(0);
+            opacity: 1;
+        }
+
+        .overlay p {
+            color: var(--text-color);
+            font-size: 1.2em;
+            margin-top: 20px;
+            font-weight: bold;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.5s ease-in-out 0.2s, transform 0.5s ease-in-out 0.2s;
+            text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .gallery-item:hover .overlay p {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Lightbox (Image Modal) */
+        .lightbox {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            /* background-color: transparent; Removed, as animation handles it */
+            backdrop-filter: blur(0px); /* Initial state for animation */
+            justify-content: center;
+            align-items: center;
+            /* animation: lightboxOpenBg 0.7s forwards; Will be applied via JS for opening */
+        }
+
+        .lightbox-content {
+            position: relative;
+            max-width: 95%;
+            max-height: 95%;
+            border-radius: 25px;
+            box-shadow: 0 0 80px rgba(0, 230, 230, 0.8), 0 0 40px rgba(255, 51, 204, 0.6);
+            overflow: hidden;
+            /* animation: zoomInHyper 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; Will be applied via JS */
+            border: 3px solid var(--primary-color);
+            transform-style: preserve-3d;
+        }
+
+        .lightbox-content img {
+            width: auto;
+            height: auto;
+            max-width: 100%;
+            max-height: 85vh; /* Max height relative to viewport height */
+            display: block;
+            margin: auto;
+            border-radius: 20px;
+            transition: transform 0.5s ease;
+        }
+
+        /* Navigation Arrows */
+        .nav-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: rgba(0, 0, 0, 0.7);
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            font-size: 24px;
+            transition: all 0.3s ease;
+            z-index: 2002;
+        }
+
+        .nav-arrow:hover {
+            background-color: var(--primary-color);
+            color: #000;
+            transform: translateY(-50%) scale(1.1);
+            box-shadow: var(--accent-glow);
+        }
+
+        .nav-arrow.prev {
+            left: 30px; /* 'Prev' is on the left in RTL */
+        }
+
+        .nav-arrow.next {
+            right: 30px; /* 'Next' is on the right in RTL */
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 30px;
+            right: 45px;
+            color: var(--primary-color);
+            font-size: 60px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            text-shadow: var(--accent-glow);
+            z-index: 2001;
+            background-color: rgba(0, 0, 0, 0.7);
+            border-radius: 50%;
+            width: 70px;
+            height: 70px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid var(--primary-color);
+        }
+
+        .close-btn:hover,
+        .close-btn:focus {
+            color: var(--secondary-color);
+            transform: rotate(180deg) scale(1.1);
+            border-color: var(--secondary-color);
+            box-shadow: var(--accent-glow);
+        }
+
+        /* Advanced Lightbox Animations */
+        @keyframes lightboxOpenBg {
+            from { background-color: transparent; backdrop-filter: blur(0px); }
+            to { background-color: rgba(0, 0, 0, 0.98); backdrop-filter: blur(15px); }
+        }
+
+        @keyframes lightboxCloseBg {
+            from { background-color: rgba(0, 0, 0, 0.98); backdrop-filter: blur(15px); }
+            to { background-color: transparent; backdrop-filter: blur(0px); }
+        }
+
+        @keyframes zoomInHyper {
+            0% { transform: scale(0.01) rotateY(180deg); opacity: 0; }
+            50% { transform: scale(1.2) rotateY(-10deg); opacity: 1; }
+            75% { transform: scale(0.9) rotateY(5deg); }
+            100% { transform: scale(1) rotateY(0deg); }
+        }
+
+        @keyframes zoomOutHyper {
+            0% { transform: scale(1) rotateY(0deg); opacity: 1; }
+            25% { transform: scale(0.9) rotateY(5deg); }
+            50% { transform: scale(1.2) rotateY(-10deg); }
+            100% { transform: scale(0.01) rotateY(180deg); opacity: 0; }
+        }
+
+        /* Protection Overlay */
+        .protection-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 0, 0, 0.1);
+            z-index: 10000;
+            display: none; /* Hidden by default */
+            pointer-events: none; /* Allows clicks to pass through when hidden */
+        }
+
+        /* Media Queries for Responsiveness */
+        @media (max-width: 1200px) {
+            h1 { font-size: 3.8em; margin-bottom: 60px; }
+            .tab-button { padding: 15px 30px; font-size: 1.2em; }
+            .gallery-content.active { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; }
+            .gallery-item img { height: 260px; }
+            .close-btn { font-size: 50px; width: 60px; height: 60px; }
+            .nav-arrow { width: 50px; height: 50px; font-size: 20px; }
+        }
+
+        @media (max-width: 992px) {
+            .container { padding: 30px; margin: 40px auto; }
+            h1 { font-size: 3.2em; margin-bottom: 50px; }
+            .tab-button { padding: 12px 25px; font-size: 1.1em; margin: 0 10px; }
+            .gallery-content.active { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 25px; }
+            .gallery-item img { height: 220px; }
+            .close-btn { font-size: 45px; top: 20px; right: 30px; width: 55px; height: 55px; }
+            .overlay i { font-size: 3.5em; }
+            .overlay p { font-size: 1.1em; }
+            .nav-arrow { width: 45px; height: 45px; font-size: 18px; }
+            .nav-arrow.prev { left: 20px; }
+            .nav-arrow.next { right: 20px; }
+        }
+
+        @media (max-width: 768px) {
+            .container { padding: 25px; margin: 30px auto; }
+            h1 { font-size: 2.8em; margin-bottom: 40px; }
+            .tabs-nav { flex-wrap: wrap; margin-bottom: 30px; }
+            .tab-button {
+                padding: 10px 20px;
+                font-size: 1em;
+                margin-bottom: 10px;
+                flex-basis: 45%;
+                text-align: center;
+            }
+            .gallery-content.active { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+            .gallery-item img { height: 180px; }
+            .close-btn { font-size: 38px; top: 15px; right: 20px; width: 48px; height: 48px; }
+            .overlay i { font-size: 3em; }
+            .overlay p { font-size: 1em; }
+            .nav-arrow { width: 40px; height: 40px; font-size: 16px; }
+            .nav-arrow.prev { left: 15px; }
+            .nav-arrow.next { right: 15px; }
+        }
+
+        @media (max-width: 480px) {
+            .container { padding: 20px; margin: 20px auto; }
+            h1 { font-size: 2.2em; margin-bottom: 30px; }
+            h1::after { width: 100px; height: 4px; }
+            .tabs-nav { flex-direction: column; align-items: center; }
+            .tab-button { width: 90%; margin: 8px 0; font-size: 0.9em; }
+            .gallery-content.active { grid-template-columns: 1fr; gap: 10px; }
+            .gallery-item img { height: 160px; }
+            .close-btn { font-size: 30px; top: 10px; right: 10px; width: 40px; height: 40px; }
+            .nav-arrow { width: 35px; height: 35px; font-size: 14px; }
+            .nav-arrow.prev { left: 10px; }
+            .nav-arrow.next { right: 10px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="protection-overlay" id="protectionOverlay"></div>
+
+    <div class="container">
+        <h1>معرض أعمال Marklens Vision</h1>
+
+        <div class="tabs-nav">
+            <button class="tab-button active" data-tab="design-photography">تصميم وتصوير</button>
+            <button class="tab-button" data-tab="logos">تصميم شعارات (لوجو)</button>
+            <button class="tab-button" data-tab="ads">إعلانات</button>
+        </div>
+
+        <div id="design-photography" class="gallery-content active">
+            <div class="gallery-item" data-src="https://i.imgur.com/oZGYfMq.jpeg">
+                <img src="https://i.imgur.com/oZGYfMq.jpeg" alt="تصميم وتصوير 1">
+                <div class="overlay"><i class="fas fa-expand-alt"></i><p>مشروع انابيب</p></div>
+            </div>
+            <div class="gallery-item" data-src="https://i.imgur.com/f8aX1cE.jpeg">
+                <img src="https://i.imgur.com/f8aX1cE.jpeg" alt="تصميم وتصوير 2">
+                <div class="overlay"><i class="fas fa-expand-alt"></i><p>مشروع المياة</p></div>
+            </div>
+            <div class="gallery-item" data-src="https://i.imgur.com/PZpsq9B.jpeg">
+                <img src="https://i.imgur.com/PZpsq9B.jpeg" alt="تصميم وتصوير 3">
+                <div class="overlay"><i class="fas fa-expand-alt"></i><p>مجموعه من صور</p></div>
+            </div>
+            <div class="gallery-item" data-src="https://i.imgur.com/r0lmT8G.jpeg">
+                <img src="https://i.imgur.com/r0lmT8G.jpeg" alt="تصميم وتصوير 4">
+                <div class="overlay"><i class="fas fa-expand-alt"></i><p>مؤسسة التكنولوجيا</p></div>
+            </div>
+            <div class="gallery-item" data-src="https://i.imgur.com/pz1t7Pi.jpeg">
+                <img src="https://i.imgur.com/pz1t7Pi.jpeg" alt="تصميم وتصوير 5">
+                <div class="overlay"><i class="fas fa-expand-alt"></i><p>تصميم محل ملابس</p></div>
+            </div>
+            <div class="gallery-item" data-src="https://i.imgur.com/fA516Kk.jpeg">
+                <img src="https://i.imgur.com/fA516Kk.jpeg" alt="تصميم وتصوير 7">
+                <div class="overlay"><i class="fas fa-expand-alt"></i><p>تصميم ترفيهة</p></div>
+            </div>
+            <div class="gallery-item" data-src="https://i.imgur.com/SZDBjMW.jpeg">
+                <img src="https://i.imgur.com/SZDBjMW.jpeg" alt="تصميم وتصوير 8">
+                <div class="overlay"><i class="fas fa-expand-alt"></i><p>تصوير محل حلويات</p></div>
+            </div>
+        </div>
+
+        <div id="logos" class="gallery-content">
+            <div class="gallery-item" data-src="https://i.imgur.com/ioIa030.jpeg">
+                <img src="https://i.imgur.com/ioIa030.jpeg" alt="لوجو 1">
+                <div class="overlay"><i class="fas fa-expand-alt"></i><p>لوجو شركة ناشئة</p></div>
+            </div>
+            <div class="gallery-item" data-src="https://i.imgur.com/GKGIa0n.jpeg">
+                <img src="https://i.imgur.com/GKGIa0n.jpeg" alt="لوجو 2">
+                <div class="overlay"><i class="fas fa-expand-alt"></i><p>لوجو  فاخر</p></div>
+            </div>
+        </div>
+
+        <div id="ads" class="gallery-content">
+            <div class="gallery-item" data-src="https://i.imgur.com/yxoZ43K.jpeg">
+                <img src="https://i.imgur.com/yxoZ43K.jpeg" alt="إعلان 1">
+                <div class="overlay"><i class="fas fa-expand-alt"></i><p>حملة اعلانية 1</p></div>
+            </div>
+            <div class="gallery-item" data-src="https://i.imgur.com/I2xVT6T.jpeg">
+                <img src="https://i.imgur.com/I2xVT6T.jpeg" alt="إعلان 2">
+                <div class="overlay"><i class="fas fa-expand-alt"></i><p>حملة اعلانية 2</p></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="lightbox" class="lightbox">
+        <span class="close-btn">&times;</span>
+        <div class="nav-arrow prev" id="prevBtn">
+            <i class="fas fa-chevron-right"></i>
+        </div>
+        <div class="nav-arrow next" id="nextBtn">
+            <i class="fas fa-chevron-left"></i>
+        </div>
+        <div class="lightbox-content">
+            <img id="lightbox-img" src="" alt="صورة مكبرة">
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const galleryContents = document.querySelectorAll('.gallery-content');
+            const lightbox = document.getElementById('lightbox');
+            const lightboxImg = document.getElementById('lightbox-img');
+            const closeBtn = document.querySelector('.close-btn');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const protectionOverlay = document.getElementById('protectionOverlay');
+            
+            let currentImageIndex = 0;
+            let currentImages = []; // Stores the gallery items of the currently active tab
+            let devToolsOpen = false; // Flag to prevent multiple alerts
+
+            // --- Screenshot Protection & Security Enhancements ---
+            function showProtectionWarning() {
+                if (!devToolsOpen) { // Only show warning once per detection
+                    alert('⚠️ تنبيه: لقطات الشاشة والتصوير غير مسموح!\nScreenshot and photography are not allowed!');
+                    protectionOverlay.style.display = 'block';
+                    setTimeout(() => {
+                        protectionOverlay.style.display = 'none';
+                    }, 2000);
+                    devToolsOpen = true; // Set flag to true
+                }
+            }
+
+            // Disable right-click context menu
+            document.addEventListener('contextmenu', e => e.preventDefault());
+            
+            // Disable common developer tools shortcuts and screenshot keys
+            document.addEventListener('keydown', function(e) {
+                // F12, Ctrl+Shift+I, Ctrl+U, Ctrl+S, Print Screen
+                if (e.key === 'F12' ||
+                    (e.ctrlKey && e.shiftKey && e.key === 'I') ||
+                    (e.ctrlKey && e.key === 'U') ||
+                    (e.ctrlKey && e.key === 'S') ||
+                    e.key === 'PrintScreen' || e.code === 'PrintScreen') { // Add e.code for better compatibility
+                    e.preventDefault();
+                    showProtectionWarning();
+                }
+            });
+
+            // Basic DevTools detection for continuous monitoring
+            // Note: This is not foolproof and can be inconsistent across browsers.
+            setInterval(() => {
+                const threshold = 160; // Increased threshold for more robust detection
+                if (window.outerWidth - window.innerWidth > threshold || window.outerHeight - window.innerHeight > threshold) {
+                    if (!devToolsOpen) {
+                        showProtectionWarning();
+                    }
+                } else {
+                    devToolsOpen = false; // Reset flag if DevTools is closed
+                }
+            }, 1000); // Check every second
+
+            // Blur page when window loses focus (potential screenshot)
+            window.addEventListener('blur', function() {
+                document.body.style.filter = 'blur(10px)';
+                protectionOverlay.style.display = 'block';
+                devToolsOpen = true; // Assume potential compromise
+            });
+
+            window.addEventListener('focus', function() {
+                document.body.style.filter = 'none';
+                protectionOverlay.style.display = 'none';
+                devToolsOpen = false; // Reset if focus returns
+            });
+
+            // Prevent image saving via drag
+            document.addEventListener('dragstart', function(e) {
+                if (e.target.tagName === 'IMG') {
+                    e.preventDefault();
+                }
+            });
+
+            // Console warning
+            console.log('%c⚠️ تحذير: هذا الموقع محمي من النسخ والتصوير!', 'color: red; font-size: 20px; font-weight: bold;');
+            console.log('%c⚠️ WARNING: This site is protected from copying and photography!', 'color: red; font-size: 20px; font-weight: bold;');
+
+            // --- Tabs functionality ---
+            tabButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+
+                    const targetTab = this.getAttribute('data-tab');
+
+                    galleryContents.forEach(content => {
+                        content.classList.remove('active');
+                        content.style.display = 'none';
+                        content.style.opacity = 0;
+                    });
+
+                    const targetContent = document.getElementById(targetTab);
+                    if (targetContent) {
+                        targetContent.style.display = 'grid'; // Ensure grid display for animation
+                        setTimeout(() => {
+                            targetContent.classList.add('active');
+                        }, 50); // Small delay to allow display change before animation
+                        currentImages = Array.from(targetContent.querySelectorAll('.gallery-item')); // Update currentImages
+                    }
+                });
+            });
+
+            // --- Lightbox functionality with navigation ---
+            function openLightbox(index) {
+                currentImageIndex = index;
+                updateLightboxImage();
+                
+                lightbox.style.display = 'flex';
+                lightbox.style.animation = 'lightboxOpenBg 0.7s forwards';
+                lightboxImg.parentElement.style.animation = 'zoomInHyper 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards';
+            }
+
+            function updateLightboxImage() {
+                if (currentImages.length > 0) {
+                    const imgSrc = currentImages[currentImageIndex].getAttribute('data-src');
+                    // Get text from the <p> tag inside the overlay, as alt text is sometimes less descriptive
+                    const imgAlt = currentImages[currentImageIndex].querySelector('.overlay p').textContent;
+                    lightboxImg.src = imgSrc;
+                    lightboxImg.alt = imgAlt;
+                }
+            }
+
+            function navigateImage(direction) {
+                if (currentImages.length === 0) return; // Prevent errors if no images
+
+                if (direction === 'next') {
+                    currentImageIndex = (currentImageIndex + 1) % currentImages.length;
+                } else { // 'prev'
+                    currentImageIndex = (currentImageIndex - 1 + currentImages.length) % currentImages.length;
+                }
+                updateLightboxImage();
+            }
+
+            // Add click events to gallery items - delegated to document for dynamic content
+            document.querySelectorAll('.gallery-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    const activeGalleryItems = currentImages; // Use the already updated currentImages
+                    const itemIndex = activeGalleryItems.indexOf(this);
+                    if (itemIndex > -1) { // Ensure item is found in current tab
+                        openLightbox(itemIndex);
+                    }
+                });
+
+                // Enhanced 3D hover effect (already well implemented)
+                item.addEventListener('mousemove', function(e) {
+                    const rect = item.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+
+                    const centerX = rect.width / 2;
+                    const centerY = rect.height / 2;
+
+                    const rotateX = ((y - centerY) / centerY) * -10;
+                    const rotateY = ((x - centerX) / centerX) * 10;
+
+                    item.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.05) translateZ(30px)`;
+                });
+
+                item.addEventListener('mouseleave', function() {
+                    item.style.transform = `perspective(1000px) translateY(0) rotateX(0deg) rotateY(0deg) scale(1) translateZ(0)`;
+                });
+            });
+
+
+            // Navigation button events
+            prevBtn.addEventListener('click', function(e) {
+                e.stopPropagation(); // Prevent closing lightbox if click on arrow
+                navigateImage('prev');
+            });
+
+            nextBtn.addEventListener('click', function(e) {
+                e.stopPropagation(); // Prevent closing lightbox if click on arrow
+                navigateImage('next');
+            });
+
+            // Close lightbox function
+            function closeLightbox() {
+                lightbox.style.animation = 'lightboxCloseBg 0.7s forwards';
+                lightboxImg.parentElement.style.animation = 'zoomOutHyper 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards';
+                setTimeout(() => {
+                    lightbox.style.display = 'none';
+                    // Clear animations to allow re-triggering
+                    lightbox.style.animation = '';
+                    lightboxImg.parentElement.style.animation = '';
+                }, 700);
+            }
+
+            // Close lightbox events
+            closeBtn.addEventListener('click', closeLightbox);
+
+            // Close lightbox when clicking outside the image
+            lightbox.addEventListener('click', function(event) {
+                // Ensure click is directly on lightbox background, not its children
+                if (event.target === lightbox) {
+                    closeLightbox();
+                }
+            });
+
+            // Keyboard navigation
+            document.addEventListener('keydown', function(event) {
+                if (lightbox.style.display === 'flex') { // Only active if lightbox is open
+                    switch(event.key) {
+                        case 'Escape':
+                            closeLightbox();
+                            break;
+                        case 'ArrowLeft': // For RTL, ArrowLeft (left arrow key) would typically move to the next item visually
+                            navigateImage('next');
+                            break;
+                        case 'ArrowRight': // For RTL, ArrowRight (right arrow key) would typically move to the previous item visually
+                            navigateImage('prev');
+                            break;
+                    }
+                }
+            });
+
+            // Touch/swipe support for mobile
+            let touchStartX = 0;
+            let touchEndX = 0;
+
+            lightbox.addEventListener('touchstart', function(e) {
+                touchStartX = e.changedTouches[0].screenX;
+            });
+
+            lightbox.addEventListener('touchend', function(e) {
+                touchEndX = e.changedTouches[0].screenX;
+                handleSwipe();
+            });
+
+            function handleSwipe() {
+                const swipeThreshold = 50;
+                const diff = touchStartX - touchEndX;
+
+                if (Math.abs(diff) > swipeThreshold) {
+                    if (diff > 0) {
+                        // Swipe left - next image (RTL logic)
+                        navigateImage('next');
+                    } else {
+                        // Swipe right - previous image (RTL logic)
+                        navigateImage('prev');
+                    }
+                }
+            }
+
+            // Initialize first tab and set currentImages for it
+            const initialTabButton = document.querySelector('.tab-button.active');
+            if (initialTabButton) {
+                initialTabButton.click(); // Simulate click to initialize content and currentImages
+            }
+        });
+    </script>
+</body>
+</html>
