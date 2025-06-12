@@ -8,7 +8,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Poppins:wght@700&display=swap" rel="stylesheet">
 <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 
-
 <style>
     /* الخطوط الأساسية */
     :root {
@@ -36,6 +35,35 @@
         direction: rtl; /* تم تعديل الاتجاه الافتراضي ليكون RTL */
         font-family: 'Open Sans', sans-serif; /* الخط الأساسي للنصوص */
         line-height: 1.6;
+    }
+
+    /* شاشة التحميل الأولية (Preloader) */
+    #preloader {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: var(--dark-bg-gradient); /* نفس خلفية الموقع أو لون ثابت */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999; /* تأكد أنها أعلى من أي شيء آخر */
+        transition: opacity 0.5s ease-out, visibility 0.5s ease-out;
+    }
+
+    #preloader.hidden {
+        opacity: 0;
+        visibility: hidden;
+    }
+
+    .preloader-spinner {
+        border: 5px solid rgba(255, 255, 255, 0.3);
+        border-top: 5px solid var(--highlight-color); /* لون مميز للسبينر */
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        animation: spin 1s linear infinite;
     }
 
     .container {
@@ -338,8 +366,8 @@
         left: 20px; /* تم تعديله ليكون على اليسار في RTL */
     }
 
-    /* مؤشر التحميل (Spinner) */
-    .loading-spinner {
+    /* مؤشر التحميل (Spinner) في الـ Lightbox */
+    .lightbox-spinner { /* تم تغيير الاسم لتجنب التضارب مع preloader-spinner */
         border: 4px solid rgba(255, 255, 255, 0.3);
         border-top: 4px solid #fff;
         border-radius: 50%;
@@ -354,19 +382,28 @@
         display: none; /* مخفي افتراضياً */
     }
 
-    .lightbox.active .loading-spinner {
+    .lightbox.active .lightbox-spinner { /* تم تغيير الاسم هنا أيضًا */
         display: block; /* يظهر عندما يكون الـ lightbox نشطاً */
     }
 
-    /* إخفاء الصورة أثناء التحميل */
+    /* إخفاء الصورة أثناء التحميل في الـ Lightbox */
     .lightbox-content img.loading {
         opacity: 0;
     }
 
     @keyframes spin {
-        0% { transform: translate(-50%, -50%) rotate(0deg); }
-        100% { transform: translate(-50%, -50%) rotate(360deg); }
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
     }
+    /* تعديل لكي لا يتداخل مع transform في .lightbox-spinner */
+    @keyframes spin-preloader {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    .preloader-spinner {
+        animation: spin-preloader 1s linear infinite;
+    }
+
 
     /* تصميم أزرار التواصل الاجتماعي والموقع */
     .social-links {
@@ -485,6 +522,11 @@
             height: 45px;
             font-size: 1.5rem;
         }
+        .preloader-spinner {
+            width: 50px;
+            height: 50px;
+            border-width: 4px;
+        }
     }
 
     @media (max-width: 480px) {
@@ -524,10 +566,20 @@
             height: 40px;
             font-size: 1.3rem;
         }
+        .preloader-spinner {
+            width: 40px;
+            height: 40px;
+            border-width: 3px;
+        }
     }
 </style>
 </head>
 <body>
+
+<div id="preloader">
+    <div class="preloader-spinner"></div>
+</div>
+
 <div class="container">
 <header>
 <h1 class="floating" data-aos="fade-up">Marklens Vision</h1>
@@ -632,8 +684,7 @@
 <div class="lightbox-content">
 <img src="" alt="صورة مكبرة">
 </div>
-<div class="loading-spinner"></div>
-</div>
+<div class="lightbox-spinner"></div> </div>
 
 <button class="back-to-top" aria-label="العودة للأعلى">
     <i class="fas fa-chevron-up"></i>
@@ -649,31 +700,32 @@ document.addEventListener('DOMContentLoaded', function() {
         mirror: false, // هل يجب تكرار التحريك عند التمرير للأعلى؟
     });
 
+    const preloader = document.getElementById('preloader');
     const galleryItems = document.querySelectorAll('.gallery-item');
     const lightbox = document.querySelector('.lightbox');
     const lightboxImg = document.querySelector('.lightbox-content img');
     const closeBtn = document.querySelector('.close-btn');
-    const loadingSpinner = document.querySelector('.loading-spinner');
+    const lightboxSpinner = document.querySelector('.lightbox-spinner'); // تم تحديث الاسم هنا
     const backToTopBtn = document.querySelector('.back-to-top');
 
     // للتحكم بالصورة الحالية في الـ lightbox
     let currentImageIndex = 0;
-    let allGalleryImages = [];
+    let allGalleryImages = []; // لتخزين جميع مسارات الصور في المعرض
 
     // التحقق من وجود العناصر قبل إضافة event listeners
-    if (!lightbox || !lightboxImg || !closeBtn || !loadingSpinner) {
+    if (!lightbox || !lightboxImg || !closeBtn || !lightboxSpinner) {
         console.error('بعض عناصر الـ lightbox غير موجودة في الصفحة.');
         return;
     }
 
-    // جمع جميع الصور من جميع المعارض
+    // جمع جميع مسارات الصور من جميع المعارض
     document.querySelectorAll('.gallery-item img').forEach(img => {
-        if (img.src) { // تأكد أن الـ src موجود
+        if (img.src) {
             allGalleryImages.push(img.src);
         }
     });
 
-    // إضافة أزرار التنقل
+    // إضافة أزرار التنقل للـ Lightbox
     const prevBtn = document.createElement('button');
     prevBtn.classList.add('nav-btn', 'prev-btn');
     prevBtn.innerHTML = '<i class="fas fa-chevron-right"></i>'; // السهم الأيمن للصورة السابقة في RTL
@@ -686,13 +738,42 @@ document.addEventListener('DOMContentLoaded', function() {
     nextBtn.setAttribute('aria-label', 'الصورة التالية');
     lightbox.appendChild(nextBtn);
 
+    // دالة للتعامل مع تحميل الصور الأولية وإخفاء الـ preloader
+    let imagesLoaded = 0;
+    const totalImages = allGalleryImages.length;
+
+    function imageLoaded() {
+        imagesLoaded++;
+        if (imagesLoaded === totalImages) {
+            // جميع الصور (أو عدد كافٍ منها) تم تحميلها، إخفاء الـ preloader
+            preloader.classList.add('hidden');
+            document.body.style.overflow = 'auto'; // إعادة التمرير للصفحة
+        }
+    }
+
+    // تحميل الصور الأساسية في الخلفية للـ preloader
+    allGalleryImages.forEach(src => {
+        const img = new Image();
+        img.src = src;
+        img.onload = imageLoaded;
+        img.onerror = imageLoaded; // حتى لو فشل التحميل، نعتبرها "تم التعامل معها"
+    });
+
+    // في حال عدم وجود صور (صفحة بسيطة)، إخفاء الـ preloader بعد فترة قصيرة
+    if (totalImages === 0) {
+        preloader.classList.add('hidden');
+        document.body.style.overflow = 'auto';
+    } else {
+        document.body.style.overflow = 'hidden'; // منع التمرير أثناء ظهور الـ preloader
+    }
+
     // Open lightbox
     galleryItems.forEach((item) => {
         item.addEventListener('click', function() {
             const img = this.querySelector('img');
             if (img && img.src) {
-                // إظهار السبينر وإخفاء الصورة أثناء التحميل
-                loadingSpinner.style.display = 'block';
+                // إظهار السبينر وإخفاء الصورة أثناء التحميل للـ lightbox
+                lightboxSpinner.style.display = 'block';
                 lightboxImg.classList.add('loading');
                 lightboxImg.src = ''; // مسح الصورة السابقة لتجنب الومضات
 
@@ -705,29 +786,29 @@ document.addEventListener('DOMContentLoaded', function() {
                     lightbox.classList.add('active');
                     document.body.style.overflow = 'hidden';
                     updateNavButtons(); // تحديث حالة الأزرار
-                    loadingSpinner.style.display = 'none'; // إخفاء السبينر
+                    lightboxSpinner.style.display = 'none'; // إخفاء السبينر بعد التحميل
                     lightboxImg.classList.remove('loading'); // إظهار الصورة
                 };
                 newImage.onerror = () => {
-                    console.error('فشل تحميل الصورة:', img.src);
+                    console.error('فشل تحميل الصورة في الـ lightbox:', img.src);
                     lightboxImg.src = 'https://via.placeholder.com/600x400?text=تعذر+تحميل+الصورة'; // صورة بديلة أو رسالة خطأ
                     lightboxImg.alt = 'تعذر تحميل الصورة';
                     currentImageIndex = allGalleryImages.indexOf(img.src); // لا يزال يشير إلى الصورة الأصلية
                     lightbox.classList.add('active');
                     document.body.style.overflow = 'hidden';
                     updateNavButtons();
-                    loadingSpinner.style.display = 'none'; // إخفاء السبينر حتى عند الخطأ
+                    lightboxSpinner.style.display = 'none'; // إخفاء السبينر حتى عند الخطأ
                     lightboxImg.classList.remove('loading'); // إظهار الصورة البديلة
                 };
             }
         });
     });
 
-    // وظيفة لتحديث الصورة المعروضة
+    // وظيفة لتحديث الصورة المعروضة في الـ Lightbox
     function showImage(index) {
         if (index >= 0 && index < allGalleryImages.length) {
             // إظهار السبينر وإخفاء الصورة أثناء التحميل
-            loadingSpinner.style.display = 'block';
+            lightboxSpinner.style.display = 'block';
             lightboxImg.classList.add('loading');
             lightboxImg.src = ''; // مسح الصورة السابقة
 
@@ -737,15 +818,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 lightboxImg.src = newImage.src;
                 currentImageIndex = index;
                 updateNavButtons();
-                loadingSpinner.style.display = 'none'; // إخفاء السبينر
+                lightboxSpinner.style.display = 'none'; // إخفاء السبينر
                 lightboxImg.classList.remove('loading'); // إظهار الصورة
             };
             newImage.onerror = () => {
-                console.error('فشل تحميل الصورة:', allGalleryImages[index]);
+                console.error('فشل تحميل الصورة في الـ lightbox:', allGalleryImages[index]);
                 lightboxImg.src = 'https://via.placeholder.com/600x400?text=تعذر+تحميل+الصورة'; // صورة بديلة
                 currentImageIndex = index;
                 updateNavButtons();
-                loadingSpinner.style.none = 'none'; // إخفاء السبينر حتى عند الخطأ
+                lightboxSpinner.style.display = 'none'; // إخفاء السبينر حتى عند الخطأ
                 lightboxImg.classList.remove('loading'); // إظهار الصورة البديلة
             };
         }
@@ -782,7 +863,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function closeLightbox() {
         lightbox.classList.remove('active');
         document.body.style.overflow = 'auto';
-        loadingSpinner.style.display = 'none'; // تأكد من إخفاء السبينر عند الإغلاق
+        lightboxSpinner.style.display = 'none'; // تأكد من إخفاء السبينر عند الإغلاق
         lightboxImg.classList.remove('loading'); // تأكد من إزالة فئة التحميل
     }
 
@@ -804,7 +885,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // في RTL: ArrowRight (السهم اليمين) ينقل للصورة السابقة
             if (e.key === 'ArrowRight') {
                 showImage(currentImageIndex - 1);
-            } 
+            }
             // في RTL: ArrowLeft (السهم اليسار) ينقل للصورة التالية
             else if (e.key === 'ArrowLeft') {
                 showImage(currentImageIndex + 1);
@@ -840,12 +921,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function handleGesture() {
         // الحد الأدنى لحركة السحب لمنع التفعيل العرضي
-        const minSwipeDistance = 75; 
+        const minSwipeDistance = 75;
 
         // في RTL: سحب لليسار (touchEndX < touchStartX) يعني الانتقال إلى التالي
         if (touchEndX < touchStartX - minSwipeDistance) {
             showImage(currentImageIndex + 1);
-        } 
+        }
         // في RTL: سحب لليمين (touchEndX > touchStartX) يعني الانتقال إلى السابق
         else if (touchEndX > touchStartX + minSwipeDistance) {
             showImage(currentImageIndex - 1);
@@ -874,19 +955,19 @@ document.addEventListener('DOMContentLoaded', function() {
 <footer style="text-align: center; padding: 20px; color: #ccc; font-size: 0.9rem;">
     <div class="social-links">
         <a href="https://marklens-vision.com" target="_blank" class="social-link website" aria-label="زيارة موقعنا الإلكتروني">
-            <i class="fas fa-globe"></i> 
+            <i class="fas fa-globe"></i>
         </a>
         <a href="https://www.facebook.com/profile.php?id=61574462416312" target="_blank" class="social-link facebook" aria-label="زيارة صفحتنا على فيسبوك">
-            <i class="fab fa-facebook-f"></i> 
+            <i class="fab fa-facebook-f"></i>
         </a>
         <a href="https://www.instagram.com/marklens_vision?fbclid=IwY2xjawK37VVleHRuA2FlbQIxMABicmlkETEwMEhNWXhCNFNwZzNtNGRiAR5I85CTWD8jLG8cNVygomIXi78HhC4oUSY4mrmsTJOiJqySdp4tGMZRfNhwgQ_aem_pySjqjC38pnuUazCrlQAHQ" target="_blank" class="social-link instagram" aria-label="زيارة صفحتنا على انستغرام">
             <i class="fab fa-instagram"></i>
         </a>
     </div>
-    
-    <div style="height: 25px;"></div> 
-    
-    &copy;جميع الحقوق محفوظةMarklens Vision 2025  
+
+    <div style="height: 25px;"></div>
+
+    &copy;جميع الحقوق محفوظةMarklens Vision 2025
 </footer>
 
 </body>
