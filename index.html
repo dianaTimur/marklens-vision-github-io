@@ -31,7 +31,6 @@
         color: var(--text-color);
         min-height: 100vh;
         padding: 20px;
-        overflow-x: hidden;
         direction: rtl; /* تم تعديل الاتجاه الافتراضي ليكون RTL */
         font-family: 'Open Sans', sans-serif; /* الخط الأساسي للنصوص */
         line-height: 1.6;
@@ -63,7 +62,7 @@
         border-radius: 50%;
         width: 60px;
         height: 60px;
-        animation: spin 1s linear infinite;
+        animation: spin-preloader 1s linear infinite; /* التأكد من استخدام spin-preloader */
     }
 
     .container {
@@ -71,6 +70,7 @@
         margin: 0 auto;
         padding: 20px;
         text-align: center;
+        overflow-x: hidden; /* إضافة هذا لمنع التجاوز الأفقي داخل الكونتينر */
     }
 
     header {
@@ -117,7 +117,7 @@
         margin: 0 auto;
         line-height: 1.8;
         color: var(--light-text-color);
-        text-align: center; /* تم تعديل هذا ليكون في المنتصف */
+        text-align: center;
     }
 
     .section-divider {
@@ -125,6 +125,8 @@
         align-items: center;
         margin: 60px 0 30px;
         position: relative;
+        width: 100%;
+        overflow: hidden; /* لمنع أي محتوى داخلي من التجاوز */
     }
 
     .divider-title {
@@ -137,7 +139,7 @@
         padding: 0 20px;
         position: relative;
         z-index: 2;
-        white-space: nowrap;
+        white-space: nowrap; /* منع النص من الالتفاف افتراضيًا */
     }
 
     @supports not (-webkit-background-clip: text) {
@@ -223,6 +225,7 @@
         visibility: hidden;
         transition: all 0.4s ease;
         backdrop-filter: blur(5px);
+        overflow: hidden;
     }
 
     .lightbox.active {
@@ -367,7 +370,7 @@
     }
 
     /* مؤشر التحميل (Spinner) في الـ Lightbox */
-    .lightbox-spinner { /* تم تغيير الاسم لتجنب التضارب مع preloader-spinner */
+    .lightbox-spinner {
         border: 4px solid rgba(255, 255, 255, 0.3);
         border-top: 4px solid #fff;
         border-radius: 50%;
@@ -382,7 +385,7 @@
         display: none; /* مخفي افتراضياً */
     }
 
-    .lightbox.active .lightbox-spinner { /* تم تغيير الاسم هنا أيضًا */
+    .lightbox.active .lightbox-spinner {
         display: block; /* يظهر عندما يكون الـ lightbox نشطاً */
     }
 
@@ -395,13 +398,9 @@
         0% { transform: rotate(0deg); }
         100% { transform: rotate(360deg); }
     }
-    /* تعديل لكي لا يتداخل مع transform في .lightbox-spinner */
     @keyframes spin-preloader {
         0% { transform: rotate(0deg); }
         100% { transform: rotate(360deg); }
-    }
-    .preloader-spinner {
-        animation: spin-preloader 1s linear infinite;
     }
 
 
@@ -447,7 +446,36 @@
     }
 
     .social-link span {
-        display: none; /* إخفاء النص */
+        display: none; /* إخفاء النص بشكل افتراضي للأزرار الدائرية */
+    }
+
+    /* CSS لزر العودة للموقع (الجديد) */
+    .social-link.carrd-back-btn {
+        background: linear-gradient(45deg, #0f3460, #16213e); /* تدرج لوني مختلف لتمييزه */
+        width: auto; /* للسماح للزر بالتوسع ليناسب النص */
+        padding: 0 20px; /* لإعطاء مساحة للنص */
+        border-radius: 25px; /* لجعل الزر مستطيلًا بأطراف دائرية */
+        /* لضمان توسيط الأيقونة والنص داخل الزر */
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .social-link.carrd-back-btn:hover {
+        background: linear-gradient(45deg, #1e293b, #2b3b50);
+        border-color: #fff;
+    }
+
+    .social-link.carrd-back-btn span {
+        display: inline-block; /* إظهار النص لهذا الزر فقط */
+        margin-right: 10px; /* مسافة بين الأيقونة والنص */
+        font-size: 1rem; /* حجم الخط للنص */
+        white-space: nowrap; /* منع النص من الالتفاف */
+    }
+
+    .social-link.carrd-back-btn i {
+        font-size: 1.5rem; /* حجم الأيقونة */
+        margin-right: 0; /* تأكد من عدم وجود هامش أيمن زائد */
     }
 
     /* زر العودة للأعلى */
@@ -536,6 +564,11 @@
         .divider-title {
             font-size: 1.5rem;
             padding: 0 10px;
+            white-space: normal; /* السماح للنص بالالتفاف على الشاشات الصغيرة جداً */
+            text-align: center; /* لضمان تمركز النص بعد الالتفاف */
+        }
+        .section-divider {
+            margin: 40px 0 20px;
         }
         .gallery {
             grid-template-columns: 1fr;
@@ -551,13 +584,25 @@
             width: 40px;
             height: 40px;
         }
-        .social-link {
+        .social-link { /* لأزرار التواصل الاجتماعي الدائرية */
             width: 50px;
             height: 50px;
             font-size: 1.5rem;
         }
         .social-links {
             gap: 15px;
+        }
+        .social-link.carrd-back-btn { /* لزر العودة للموقع */
+            width: auto;
+            padding: 0 10px; /* تقليل البادينج */
+            border-radius: 20px; /* تصغير نصف قطر الحافة */
+        }
+        .social-link.carrd-back-btn span {
+            margin-right: 5px;
+            font-size: 0.8rem; /* تصغير حجم الخط على الجوال */
+        }
+        .social-link.carrd-back-btn i {
+            font-size: 1.3rem; /* تصغير حجم الأيقونة على الجوال */
         }
         .back-to-top {
             bottom: 15px;
@@ -705,7 +750,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const lightbox = document.querySelector('.lightbox');
     const lightboxImg = document.querySelector('.lightbox-content img');
     const closeBtn = document.querySelector('.close-btn');
-    const lightboxSpinner = document.querySelector('.lightbox-spinner'); // تم تحديث الاسم هنا
+    const lightboxSpinner = document.querySelector('.lightbox-spinner');
     const backToTopBtn = document.querySelector('.back-to-top');
 
     // للتحكم بالصورة الحالية في الـ lightbox
@@ -752,20 +797,31 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // تحميل الصور الأساسية في الخلفية للـ preloader
-    allGalleryImages.forEach(src => {
-        const img = new Image();
-        img.src = src;
-        img.onload = imageLoaded;
-        img.onerror = imageLoaded; // حتى لو فشل التحميل، نعتبرها "تم التعامل معها"
-    });
-
-    // في حال عدم وجود صور (صفحة بسيطة)، إخفاء الـ preloader بعد فترة قصيرة
     if (totalImages === 0) {
+        // إذا لم يكن هناك صور، أخفِ الـ preloader على الفور
         preloader.classList.add('hidden');
         document.body.style.overflow = 'auto';
     } else {
         document.body.style.overflow = 'hidden'; // منع التمرير أثناء ظهور الـ preloader
+
+        // تعيين مهلة قصوى لإخفاء الـ preloader
+        const MAX_PRELOADER_DISPLAY_TIME = 3000; // 3 ثوانٍ
+        setTimeout(() => {
+            if (!preloader.classList.contains('hidden')) {
+                preloader.classList.add('hidden');
+                document.body.style.overflow = 'auto';
+                console.warn('Preloader hidden due to timeout, some images might still be loading.');
+            }
+        }, MAX_PRELOADER_DISPLAY_TIME);
+
+        allGalleryImages.forEach(src => {
+            const img = new Image();
+            img.src = src;
+            img.onload = imageLoaded;
+            img.onerror = imageLoaded; // حتى لو فشل التحميل، نعتبرها "تم التعامل معها"
+        });
     }
+
 
     // Open lightbox
     galleryItems.forEach((item) => {
@@ -962,6 +1018,9 @@ document.addEventListener('DOMContentLoaded', function() {
         </a>
         <a href="https://www.instagram.com/marklens_vision?fbclid=IwY2xjawK37VVleHRuA2FlbQIxMABicmlkETEwMEhNWXhCNFNwZzNtNGRiAR5I85CTWD8jLG8cNVygomIXi78HhC4oUSY4mrmsTJOiJqySdp4tGMZRfNhwgQ_aem_pySjqjC38pnuUazCrlQAHQ" target="_blank" class="social-link instagram" aria-label="زيارة صفحتنا على انستغرام">
             <i class="fab fa-instagram"></i>
+        </a>
+        <a href="https://marklens-vision.com" target="_self" class="social-link carrd-back-btn" aria-label="العودة إلى الموقع الرئيسي">
+            <i class="fas fa-arrow-left"></i> <span>العودة للموقع</span>
         </a>
     </div>
 
